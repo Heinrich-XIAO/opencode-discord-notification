@@ -36,6 +36,10 @@ Create a configuration file at `~/.config/opencode/discord-notification-config.j
 
 You can optionally include a `mention` entry (for example `"<@123456789012345678>"`) to ping a Discord user or role whenever a notification fires.
 
+### Config Reference for Kilo
+
+When running under Kilo (Kilo CLI 1.0 from Kilo-Org/kilo), configuration is managed through `/connect` for provider setup, the `~/.config/kilo/` files, and `kilo auth` for credentials. Kilo merges `config.json`, `opencode.json`, and `opencode.jsonc`, so place provider, model, permission, and MCP values in `opencode.json` (or `opencode.jsonc`) there and restart the CLI after editing. You can also keep the snippet above in `~/.config/opencode/discord-notification-config.json` if you need to work around schema validation.
+
 ## Development
 
 1. Clone the repo.
