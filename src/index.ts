@@ -11,13 +11,12 @@ interface DiscordWebhookConfig {
 export const DiscordNotificationPlugin: Plugin = async ({ client, project }) => {
   return {
     event: async ({ event }) => {
-      const eventType = (event as any)?.type;
       // 1. Handle Session Completed (Green)
-      if (eventType === "session.idle") {
+      if (event.type=== "session.idle") {
         await handleNotification(client, project, event, "idle");
       }
       // 2. Handle Permission Request (Orange)
-      else if (eventType === "permission.asked") {
+      else if (event.type=== "permission.asked") {
         await handleNotification(client, project, event, "permission");
       }
     },
