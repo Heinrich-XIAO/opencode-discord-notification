@@ -5,17 +5,19 @@ interface DiscordWebhookConfig {
   enabled?: boolean;
   username?: string;
   avatarUrl?: string;
+  mention?: string;
 }
 
 export const DiscordNotificationPlugin: Plugin = async ({ client, project }) => {
   return {
     event: async ({ event }) => {
+      const eventType = (event as any)?.type;
       // 1. Handle Session Completed (Green)
-      if (event.type === "session.idle") {
+      if (eventType === "session.idle") {
         await handleNotification(client, project, event, "idle");
       }
       // 2. Handle Permission Request (Orange)
-      else if (event.type === "permission.asked") {
+      else if (eventType === "permission.asked") {
         await handleNotification(client, project, event, "permission");
       }
     },
@@ -115,21 +117,28 @@ async function handleNotification(client: any, project: any, event: any, type: "
       description = "OpenCode has paused execution and is waiting for you to authorize the operation shown above.";
     }
 
+    const payload: Record<string, any> = {
+      username: config.username || "OpenCode Notifier",
+      avatar_url: config.avatarUrl,
+      embeds: [{
+        title,
+        description: description.length > 1500 ? description.substring(0, 1497) + "..." : description,
+        color,
+        fields,
+        footer: { text: `Session ID: ${sessionId}` },
+        timestamp: new Date().toISOString()
+      }]
+    };
+
+    const mentionText = config.mention?.trim();
+    if (mentionText) {
+      payload.content = mentionText;
+    }
+
     await fetch(config.webhookUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        username: config.username || "OpenCode Notifier",
-        avatar_url: config.avatarUrl,
-        embeds: [{
-          title,
-          description: description.length > 1500 ? description.substring(0, 1497) + "..." : description,
-          color,
-          fields,
-          footer: { text: `Session ID: ${sessionId}` },
-          timestamp: new Date().toISOString()
-        }]
-      }),
+      body: JSON.stringify(payload),
     });
   } catch (e) {
     console.error("Discord Plugin Error:", e);

@@ -34,6 +34,8 @@ Create a configuration file at `~/.config/opencode/discord-notification-config.j
 }
 ```
 
+You can optionally include a `mention` entry (for example `"<@123456789012345678>"`) to ping a Discord user or role whenever a notification fires.
+
 ## Development
 
 1. Clone the repo.
