@@ -10,12 +10,13 @@ interface DiscordWebhookConfig {
 export const DiscordNotificationPlugin: Plugin = async ({ client, project }) => {
   return {
     event: async ({ event }) => {
+      const eventType = (event as any)?.type;
       // 1. Handle Session Completed (Green)
-      if (event.type === "session.idle") {
+      if (eventType === "session.idle") {
         await handleNotification(client, project, event, "idle");
       }
       // 2. Handle Permission Request (Orange)
-      else if (event.type === "permission.asked") {
+      else if (eventType === "permission.asked") {
         await handleNotification(client, project, event, "permission");
       }
     },
@@ -31,10 +32,21 @@ async function handleNotification(client: any, project: any, event: any, type: "
 
     if (!config.webhookUrl) {
       try {
-        const configPath = "/var/home/frieser/.config/opencode/discord-notification-config.json";
-        const configFile = Bun.file(configPath);
-        if (await configFile.exists()) {
-          config = await configFile.json();
+        const candidatePaths: string[] = [];
+        const processHome = (globalThis as any)?.process?.env?.HOME;
+        if (processHome) {
+          candidatePaths.push(`${processHome}/.config/opencode/discord-notification-config.json`);
+        }
+        const bunHome = (globalThis as any)?.Bun?.env?.HOME || (globalThis as any)?.Bun?.env?.home;
+        if (bunHome && bunHome !== processHome) {
+          candidatePaths.push(`${bunHome}/.config/opencode/discord-notification-config.json`);
+        }
+        for (const candidate of candidatePaths) {
+          const configFile = Bun.file(candidate);
+          if (await configFile.exists()) {
+            config = await configFile.json();
+            break;
+          }
         }
       } catch (e) {}
     }
